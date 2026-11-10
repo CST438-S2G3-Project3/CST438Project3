@@ -112,6 +112,8 @@ gradle-app.setting
 ### Gradle Patch ###
 # Java heap dump
 *.hprof
-
+# JetBrains IDE workspace files
+.idea/
+**/.idea/
 
 # End of https://www.toptal.com/developers/gitignore/api/macos,windows
