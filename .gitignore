@@ -1,6 +1,9 @@
 # Node dependencies
 node_modules/
 
+# Binaries
+*.bin
+
 # Expo
 .expo/
 dist/
@@ -115,5 +118,9 @@ gradle-app.setting
 # JetBrains IDE workspace files
 .idea/
 **/.idea/
+
+api/gradle/gradle-daemon-jvm.properties
+api/local.properties
+api/build
 
 # End of https://www.toptal.com/developers/gitignore/api/macos,windows
