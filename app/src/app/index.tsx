@@ -1,5 +1,6 @@
+import { useState } from 'react';
 import * as Device from 'expo-device';
-import { Platform, StyleSheet } from 'react-native';
+import { Button, Platform, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AnimatedIcon } from '@/components/animated-icon';
@@ -8,6 +9,7 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { WebBadge } from '@/components/web-badge';
 import { BottomTabInset, MaxContentWidth, Spacing } from '@/constants/theme';
+import { signInWithGitHub } from '@/lib/githubAuth';
 
 function getDevMenuHint() {
   if (Platform.OS === 'web') {
@@ -29,6 +31,24 @@ function getDevMenuHint() {
 }
 
 export default function HomeScreen() {
+  const [loading, setLoading] = useState(false);
+  const [authMessage, setAuthMessage] = useState('');
+
+  const handleGitHubSignIn = async () => {
+    setLoading(true);
+    setAuthMessage('');
+
+    try {
+      const session = await signInWithGitHub();
+
+      setAuthMessage(session ? `Signed in as ${session.user.email ?? 'GitHub user'}` : 'Sign-in was cancelled.');
+    } catch (error) {
+      setAuthMessage(error instanceof Error ? error.message : 'Github sign-in failed.',);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <ThemedView style={styles.container}>
       <SafeAreaView style={styles.safeArea}>
@@ -53,6 +73,12 @@ export default function HomeScreen() {
             title="Fresh start"
             hint={<ThemedText type="code">npm run reset-project</ThemedText>}
           />
+          <Button
+            title={loading ? 'Signing in...' : 'Continue with GitHub'}
+            disabled={loading}
+            onPress={handleGitHubSignIn}
+          />
+          {authMessage ? <ThemedText>{authMessage}</ThemedText> : null}
         </ThemedView>
 
         {Platform.OS === 'web' && <WebBadge />}
