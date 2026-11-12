@@ -10,6 +10,7 @@ import { ThemedView } from '@/components/themed-view';
 import { WebBadge } from '@/components/web-badge';
 import { BottomTabInset, MaxContentWidth, Spacing } from '@/constants/theme';
 import { signInWithGitHub } from '@/lib/githubAuth';
+import { handleGoogleSignIn } from '@/lib/githubAuth';
 
 function getDevMenuHint() {
   if (Platform.OS === 'web') {
@@ -49,6 +50,23 @@ export default function HomeScreen() {
     }
   };
 
+  const onGoogleSignIn = async () => {
+    setLoading(true);
+    setAuthMessage('');
+
+    try {
+      const session = await handleGoogleSignIn();
+
+      if (session) {
+        setAuthMessage(`Signed in as ${session.user.email ?? session.user.id}`);
+      }
+    } catch (error) {
+      setAuthMessage(error instanceof Error ? error.message : 'Google sign-in failed');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <ThemedView style={styles.container}>
       <SafeAreaView style={styles.safeArea}>
@@ -77,6 +95,12 @@ export default function HomeScreen() {
             title={loading ? 'Signing in...' : 'Continue with GitHub'}
             disabled={loading}
             onPress={handleGitHubSignIn}
+          />
+          {authMessage ? <ThemedText>{authMessage}</ThemedText> : null}
+          <Button
+            title={loading ? 'Signing in...' : 'Continue with Google'}
+            disabled={loading}
+            onPress={handleGoogleSignIn}
           />
           {authMessage ? <ThemedText>{authMessage}</ThemedText> : null}
         </ThemedView>
