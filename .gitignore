@@ -119,6 +119,9 @@ gradle-app.setting
 .idea/
 **/.idea/
 
+# VSCode
+.vscode
+
 api/gradle/gradle-daemon-jvm.properties
 api/local.properties
 api/build
