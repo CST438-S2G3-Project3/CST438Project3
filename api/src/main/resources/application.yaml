@@ -5,10 +5,5 @@ spring:
   datasource:
     url: jdbc:postgresql://aws-0-us-east-1.pooler.supabase.com:5432/postgres?sslmode=require
     username: postgres.alegkaqqgkpnajcrprvl
-    password: ${SUPABASE_DB_PASSWORD}
+    passowrd: ${SUPABASE_DB_PASSOWRD}
     driver-class-name: org.postgresql.Driver
-
-  jpa:
-    hibernate:
-      ddl-auto: none
-    show-sql: true
