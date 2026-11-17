@@ -3,9 +3,12 @@ import { useColorScheme } from 'react-native';
 
 import { Colors } from '@/constants/theme';
 
+import { useAuthSession } from '@/hooks/use-auth-session';
+
 export default function AppTabs() {
   const scheme = useColorScheme();
   const colors = Colors[scheme === 'dark' ? 'dark' : 'light'];
+  const { isSignedIn, isAuthReady } = useAuthSession();
 
   return (
     <NativeTabs
@@ -26,6 +29,11 @@ export default function AppTabs() {
           src={require('@/assets/images/tabIcons/explore.png')}
           renderingMode="template"
         />
+      </NativeTabs.Trigger>
+
+      <NativeTabs.Trigger name="account" hidden={!isAuthReady || !isSignedIn}>
+        <NativeTabs.Trigger.Label>Account</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Icon sf="person.crop.circle" md="account_circle" />
       </NativeTabs.Trigger>
     </NativeTabs>
   );

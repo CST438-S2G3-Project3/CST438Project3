@@ -125,5 +125,6 @@ gradle-app.setting
 api/gradle/gradle-daemon-jvm.properties
 api/local.properties
 api/build
+api/bin
 
 # End of https://www.toptal.com/developers/gitignore/api/macos,windows
