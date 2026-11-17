@@ -1,0 +1,67 @@
+openapi: 3.0.3
+info:
+  title: Legally Distinct Trip Advisor API
+  version: 0.1.0
+
+paths:
+  /api/v1/trips/{tripId}/destinations:
+    post:
+      summary: Add a destination to a trip you own
+      operationId: createDestination
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: tripId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, location]
+              properties:
+                name:
+                  type: string
+                  pattern: '\S'
+                  example: Golden Gate Park
+                location:
+                  type: string
+                  pattern: '\S'
+                  example: San Francisco, CA
+      responses:
+        '201':
+          description: Destination saved
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [id, tripId, name, location]
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+                  tripId:
+                    type: string
+                    format: uuid
+                  name:
+                    type: string
+                  location:
+                    type: string
+        '400':
+          description: Invalid trip ID or missing or blank destination details
+        '401':
+          description: Sign-in required
+        '404':
+          description: Trip does not exist or is not owned by the caller
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
