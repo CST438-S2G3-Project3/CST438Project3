@@ -1,7 +1,34 @@
 services:
-  trip-advisor-api:
-    build: ./api
+  api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+
+    container_name: trip-advisor-api
+
+    environment:
+      SUPABASE_DB_PASSWORD: ${SUPABASE_DB_PASSWORD}
+
     ports:
       - "8080:8080"
+
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./app
+      dockerfile: Dockerfile
+
+    container_name: trip-advisor-frontend
+
     environment:
-      SUPABASE_DB_PASSOWRD: ${SUPABASE_DB_PASSWORD}
+      EXPO_PUBLIC_SUPABASE_URL: ${EXPO_PUBLIC_SUPABASE_URL}
+      EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ${EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY}
+
+    ports:
+      - "8081:8081"
+
+    depends_on:
+      - api
+
+    restart: unless-stopped
