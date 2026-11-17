@@ -15,7 +15,11 @@ import { ExternalLink } from "./external-link";
 import { ThemedText } from "./themed-text";
 import { ThemedView } from "./themed-view";
 
+import { useAuthSession } from '@/hooks/use-auth-session';
+
 export default function AppTabs() {
+  const { isSignedIn, isAuthReady } = useAuthSession();
+
   return (
     <Tabs>
       <TabSlot style={{ height: "100%" }} />
@@ -26,6 +30,9 @@ export default function AppTabs() {
           </TabTrigger>
           <TabTrigger name="explore" href="/explore" asChild>
             <TabButton>Explore</TabButton>
+          </TabTrigger>
+          <TabTrigger name="account" href="/account" hidden={!isAuthReady || !isSignedIn} asChild>
+            <TabButton>Account</TabButton>
           </TabTrigger>
         </CustomTabList>
       </TabList>
