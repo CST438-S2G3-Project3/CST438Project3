@@ -47,5 +47,3 @@ cd app
 npm test
 \`\`\`
 
-## 5. Seed Data
-When the Docker containers start, the database is automatically seeded with test data (Destinations, Trips, and Activities). You can authenticate and test the API using the credentials provided in the `.env.example` file.
