@@ -3,61 +3,92 @@ info:
   title: Legally Distinct Trip Advisor API
   version: 0.1.0
 
+security:
+  - bearerAuth: []
+
 paths:
   /api/v1/trips/{tripId}/destinations:
+    parameters:
+      - $ref: '#/components/parameters/TripId'
+    get:
+      summary: List destinations for a trip you own
+      operationId: listDestinations
+      responses:
+        '200':
+          description: Destinations ordered by creation time, then ID; an empty trip returns an empty array
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Destination'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
     post:
       summary: Add a destination to a trip you own
       operationId: createDestination
-      security:
-        - bearerAuth: []
-      parameters:
-        - name: tripId
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
       requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required: [name, location]
-              properties:
-                name:
-                  type: string
-                  pattern: '\S'
-                  example: Golden Gate Park
-                location:
-                  type: string
-                  pattern: '\S'
-                  example: San Francisco, CA
+        $ref: '#/components/requestBodies/DestinationInput'
       responses:
         '201':
           description: Destination saved
           content:
             application/json:
               schema:
-                type: object
-                required: [id, tripId, name, location]
-                properties:
-                  id:
-                    type: string
-                    format: uuid
-                  tripId:
-                    type: string
-                    format: uuid
-                  name:
-                    type: string
-                  location:
-                    type: string
+                $ref: '#/components/schemas/Destination'
         '400':
-          description: Invalid trip ID or missing or blank destination details
+          $ref: '#/components/responses/BadRequest'
         '401':
-          description: Sign-in required
+          $ref: '#/components/responses/Unauthorized'
         '404':
-          description: Trip does not exist or is not owned by the caller
+          $ref: '#/components/responses/NotFound'
+
+  /api/v1/trips/{tripId}/destinations/{destinationId}:
+    parameters:
+      - $ref: '#/components/parameters/TripId'
+      - $ref: '#/components/parameters/DestinationId'
+    put:
+      summary: Update a destination in a trip you own
+      description: Replaces name and location. The destination must belong to the trip in the URL.
+      operationId: updateDestination
+      requestBody:
+        $ref: '#/components/requestBodies/DestinationInput'
+      responses:
+        '200':
+          description: Destination updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Destination'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      summary: Delete a destination in a trip you own
+      description: Requires the destination to belong to the trip in the URL. Destinations with activities cannot be deleted until those activities are removed.
+      operationId: deleteDestination
+      responses:
+        '204':
+          description: Destination deleted; no response body
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: Destination still has activities; no data was deleted
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
 
 components:
   securitySchemes:
@@ -65,3 +96,109 @@ components:
       type: http
       scheme: bearer
       bearerFormat: JWT
+
+  parameters:
+    TripId:
+      name: tripId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    DestinationId:
+      name: destinationId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+
+  requestBodies:
+    DestinationInput:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/DestinationInput'
+
+  schemas:
+    DestinationInput:
+      type: object
+      required: [name, location]
+      description: Trim leading and trailing whitespace before saving. Both fields must contain non-whitespace text. The same validation applies to create and update.
+      properties:
+        name:
+          type: string
+          pattern: '\S'
+          example: Golden Gate Park
+        location:
+          type: string
+          pattern: '\S'
+          example: San Francisco, CA
+    Destination:
+      type: object
+      required: [id, tripId, name, location]
+      properties:
+        id:
+          type: string
+          format: uuid
+        tripId:
+          type: string
+          format: uuid
+        name:
+          type: string
+        location:
+          type: string
+          nullable: true
+          description: May be null for legacy records; new creates and updates require a nonblank location.
+        createdAt:
+          type: string
+          format: date-time
+          nullable: true
+    Problem:
+      type: object
+      description: RFC 9457 Problem Details. The status field matches the HTTP response status.
+      required: [type, title, status, detail, instance]
+      properties:
+        type:
+          type: string
+          format: uri
+          example: about:blank
+        title:
+          type: string
+          example: Bad Request
+        status:
+          type: integer
+          example: 400
+        detail:
+          type: string
+          example: Location is required
+        instance:
+          type: string
+          format: uri-reference
+          example: /api/v1/trips/00000000-0000-0000-0000-000000000001/destinations
+
+  responses:
+    BadRequest:
+      description: Malformed UUID or JSON, or missing, null, or blank required destination details
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+    Unauthorized:
+      description: Missing, invalid, or expired access token
+      headers:
+        WWW-Authenticate:
+          schema:
+            type: string
+            example: Bearer
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+    NotFound:
+      description: Trip is missing or owned by someone else, or destination does not belong to that trip
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Problem'
